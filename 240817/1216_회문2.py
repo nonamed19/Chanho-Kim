@@ -1,38 +1,17 @@
-from pprint import pprint
-
-T = 10
-
-for tc in range(T):
-    Testcase = int(input())
+for _ in range(10):
+    tc = int(input())
     N = 100 # 100 x 100 행렬
-    arr = [list(input()) for _ in range(N)]
+    lst = [input() for _ in range(N)] # list(str)으로 받기
+    lst_inv = [''.join(x) for x in zip(*lst)] # 전치행렬 in str
     count = 0
 
-    # 행 탐색
-    for i in range(N):
-        for j in range(N):
-            M = j + 1  # length of palindrome
-            while M < N:
-                for k in range(N-M+1):
-                    lst = list(arr[i][x] for x in range(j, M))
-                    for l in range(len(lst)//2):
-                        # print(lst)
-                        if lst[l] != lst[-1-l]:
-                            break   # 회문이 아닌 경우
-                        else:
-                            if count < len(lst):
-                                count = len(lst)
-                M += 1
+    # 행렬 탐색
+    for i in range(N): # i = N
+        for j in range(N): # i = N
+            for k in range(1, N-j+1):
+                temp1 = lst[i][j:j+k] # 행 palindrome 확인
+                temp2 = lst_inv[i][j:j+k] # 열 palindrome 확인
+                if temp1 == temp1[::-1] or temp2 == temp2[::-1]:
+                    count = max(count, k)
 
-    # # 열 탐색
-    # for j in range(8):
-    #     for i in range(8-N+1):
-    #         lst = list(arr[x][j] for x in range(i, i+N))
-    #
-    #         for k in range(N//2):
-    #             if lst[k] != lst[-1-k]:
-    #                 break   # 회문이 아닌 경우
-    #         else:
-    #             count += 1
-    #
-    print('#%d %d' %(tc+1, count))
+    print('#%d %d' %(tc, count))

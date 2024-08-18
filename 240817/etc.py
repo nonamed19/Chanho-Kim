@@ -1,35 +1,20 @@
-T = int(input())
+T = 10
 
 for tc in range(T):
-    N = int(input())
-    lst = list(map(int, input().split()))
-    result = 0
-    validation = 0
+    Testcase = int(input())
+    N = 100  # 100 x 100 행렬
+    lst = [input() for _ in range(N)]
+    lst_inv = [''.join(row) for row in zip(*lst)]  # 전치된 행렬을 string으로 변환
+    count = 0
 
-    for i in range(N-1):
-        for j in range(i+1, N):
-            temp = str(lst[i] * lst[j])
+    # 행과 열 동시에 탐색
+    for i in range(N):
+        for j in range(N):
+            for k in range(N-j, 0, -1):  # 큰 길이부터 탐색
+                temp1 = lst[i][j:j+k]
+                temp2 = lst_inv[i][j:j+k]
+                if temp1 == temp1[::-1] or temp2 == temp2[::-1]:  # 회문 확인
+                    count = max(count, k)
+                    break  # 더 긴 길이의 회문을 찾았으므로 종료
 
-            lst_temp = []
-            for k in range(len(temp)):
-                lst_temp.append(int(temp[k]))
-
-            # 곱한 숫자가 1자리 수이면서 result보다 클 때
-            if len(lst_temp) == 1 and result < lst_temp[0]:
-                result = lst_temp[0]
-
-            # 곱한 숫자가 2자리 이상이면서 result보다 클 때
-            m = 0
-            while m < len(lst_temp) - 1:
-                if lst_temp[m] > lst_temp[m+1]:
-                    break
-                if m == len(lst_temp) - 2:
-                    num_temp = 0
-                    for l in range(len(lst_temp)):
-                        num_temp += lst_temp[-1-l]*10**l
-                    if result < num_temp:
-                        result = num_temp
-                    break
-                m += 1
-
-    print('#%d %d' %(tc+1, result))
+    print('#%d %d' % (tc + 1, count))
