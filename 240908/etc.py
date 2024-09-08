@@ -1,36 +1,81 @@
-from pprint import pprint
+# 방향
+dx = [0, 1, 0, -1]
+dy = [1, 0, -1, 0]
 
-def spread(X, Y):
-    if arr[X][Y] >= 5:  # 현재 위치에 있는 미세먼지가 5 이상일 때 확산
-        di, dj = [0, 1, 0, -1], [1, 0, -1, 0]  # 방향: 동, 남, 서, 북
-        amount = arr[X][Y] // 5  # 각 방향으로 확산되는 미세먼지 양
-        cnt = 0  # 확산된 방향 개수
-        for k in range(4):
-            ni = X + di[k]
-            nj = Y + dj[k]
-            if 1 <= ni <= R and 1 <= nj <= C and arr[ni][nj] != -1:  # 경계 및 공기청정기 확인
-                arr[ni][nj] += amount
-                cnt += 1
-        arr[X][Y] -= amount * cnt  # 확산된 양만큼 현재 위치에서 차감
-    return
+def spread_dust(R, C, board):
+    temp = [[0] * C for _ in range(R)] # 확산 저장할 거
 
-def aircon():
-    # 공기청정기 작동 로직 추가 필요
-    pass
+    for i in range(R):
+        for j in range(C):
+            if board[i][j] > 0: # 확산되는 양은?
+                spread_amount = board[i][j] // 5
+                spread_count = 0
+
+                for d in range(4):
+                    nx, ny = i + dx[d], j + dy[d]
+
+                    if 0 <= nx < R and 0 <= ny < C and board[nx][ny] != -1:
+                        temp[nx][ny] += spread_amount
+                        spread_count += 1 # 확산 끝
+
+                # 확산 끝나고 남은 미세먼지
+                board[i][j] -= spread_amount * spread_count
+    # 확산된 양을 원래 보드에 더하기
+    for i in range(R):
+        for j in range(C):
+            board[i][j] += temp[i][j]
+
+
+def run_cleaner(R, C, board, cleaner):
+    # 시계 방향: 아래쪽
+    low = cleaner[1]
+    # 반시계 방향: 위쪽
+    up = cleaner[0]
+
+    # 시계방향 순환
+    for i in range(low+1, R-1):
+        board[i][0] = board[i+1][0]
+    for i in range(C-1):
+        board[R-1][i] = board[R-1][i+1]
+    for i in range(R-1, low, -1):
+        board[i][C-1] = board[i-1][C-1]
+    for i in range(C-1, 1, -1):
+        board[low][i] = board[low][i-1]
+    board[low][1] = 0 # 공기청정기 공기
+    # 와 머리에 쥐날 거 같은데...
+
+    # 반시계 방향 순환... 어우 머리아파 쓰기 싫어
+    for i in range(up-1, 0, -1):
+        board[i][0] = board[i-1][0]
+    for i in range(C-1):
+        board[0][i] = board[0][i+1]
+    for i in range(C-1, 1, -1):
+        board[i][C-1] = board[i+1][C-1]
+    for i in range(C-1, 1, -1):
+        board[up][i] = board[up][i-1]
+    board[up][1] = 0 # 얘도 공기청정기 공기
+
+def micro_dust(R, C, board): # 미세먼지 계산
+    total_dust = 0
+    for i in range(R):
+        for j in range(C):
+            if board[i][j] > 0:
+                total_dust += board[i][j]
+    return total_dust
 
 
 R, C, T = map(int, input().split())
-arr_input = [list(map(int, input().split())) for _ in range(R)]
+board = [list(map(int, input().split())) for _ in range(R)]
 
-# 배열을 경계 포함하여 확장
-arr = [[-1] * (C + 2) for _ in range(R + 2)]
+cleaner = [] # 공기청정기 위치는?
 for i in range(R):
-    for j in range(C):
-        arr[i + 1][j + 1] = arr_input[i][j]
+    if board[i][0] == -1:
+        cleaner.append(i) # 여기다!
 
-# 확산 실행
-for i in range(1, R + 1):
-    for j in range(1, C + 1):
-        spread(i, j)
+# T초 동안 확산, 정화함
+for _ in range(T):
+    spread_dust(R, C, board) # 확산
+    run_cleaner(R, C, board, cleaner) # 정화
 
-pprint(arr)
+result = micro_dust(R, C, board)
+print(result)
